@@ -5,3 +5,26 @@
 #
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
+require 'open-uri'
+require 'json'
+
+puts "Cleaning database"
+Movie.destroy_all
+puts "Database cleaned"
+
+url = "https://api.themoviedb.org/3/movie/550?api_key=568680969577c0005487610b135d1e9e"
+10.times do |i|
+  puts "Importing movies from page #{i + 1}"
+  movies = JSON.parse(URI.open("#{url}?page=#{i + 1}").read)['results']
+  movies.each do |movie|
+    puts "Creating #{movie['title']}"
+    base_poster_url = "https://image.tmdb.org/t/p/w500/original"
+    Movie.create(
+      title: movie['title'],
+      overview: movie['oveview'],
+      poster_url: "#{base_poster_url}#{movie['backdrop_path']}",
+      rating: movie['vote_average']
+    )
+  end
+end
+puts "Movies created"
